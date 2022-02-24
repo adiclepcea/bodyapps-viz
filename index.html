@@ -4,17 +4,26 @@
 	<head>
 		<title>BodyVisualiser</title>
 		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link rel="stylesheet" type="text/css" href="css/style.css">
+		<style>
+			#info {
+				position: fixed;
+				bottom: 0;
+				right: 0;
+				width: 300px;
+				height: 100%;
+				overflow:scroll;
+    			overflow-x:hidden;
+  				border: 3px solid #73AD21;
+			}
+		</style>
 	</head>
 
 	<body>
-		
-		<div id="info">BodyVisualiser for Valentina Project</div>
-        <div id="info"><a href="female.html">Switch to female body.</a></div>
-		<div id="info"><a href="kid.html">Switch to kid's body.</a></div>
-		<div id="container"></div>
-		
+		<div id="container">
+		</div>
+		<div id="info"></div>
+
 		<script src="js/three.js"></script>
 		
 		<script src="js/UCSCharacter.js"></script>
@@ -25,8 +34,32 @@
 		
 		<script>
 			
+			document.addEventListener("click", showMedInfo);
 		
-	
+			function showPage(bodyPart){
+				var xhr = typeof XMLHttpRequest != 'undefined' ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
+				xhr.open('get', "bodyParts/"+bodyPart+".html", true);
+				xhr.onreadystatechange = function() {
+					if (xhr.readyState == 4 && xhr.status == 200) { 
+						document.getElementById("info").innerHTML = xhr.responseText;
+					} 
+				}
+				xhr.send();
+
+			}
+			function showMedInfo(ev){
+				x = ev.clientX;
+				y = ev.clientY;
+				el = document.getElementById("info");
+				el.innerHTML=""+x+"; "+y;
+				if(x<1200 && x>730){
+					if(y<439 && y>392){
+						showPage("liver");
+					}else if(y<280 && y>198){
+						showPage("head");
+					}
+				}
+			}
 			
 			var SCREEN_WIDTH = window.innerWidth;
 			var SCREEN_HEIGHT = window.innerHeight;
@@ -64,7 +97,6 @@
 
 				// LIGHTS
 
-
 				var light = new THREE.DirectionalLight( 0xffffff, 1 );
 				light.position.set( 0, -1, 0 );
 				light.position.set( 13, 5, 0 );
@@ -84,14 +116,14 @@
 					console.log( "Load Complete" );
 					console.log( character.numSkins + " skins and " + character.numMorphs + " morphtargets loaded." );
 					gui = new dat.GUI();
-					setupMorphsGUI();
+					//setupMorphsGUI();
 					gui.width = 300;
 					gui.open();
 			
 				}
 				
 				var loader = new THREE.XHRLoader();
-				loader.load("models/skinned/testconfig.json", function ( text ) {
+				loader.load("models/skinned/femaleconfig.json", function ( text ) {
 
 					var config = JSON.parse( text );
 					character.loadParts( config );
@@ -107,37 +139,6 @@
 
 			}
 			
-		
-			
-			function setupMorphsGUI() {
-				
-				var morphGui = gui.addFolder( "Morphs" );
-				
-				morphConfig = {};
-				
-				var morphCallback = function( index ) {
-					return function () {
-
-						character.updateMorphs( morphConfig );
-					}
-				}
-				
-				for ( var i = 0; i < character.numMorphs; i ++ ) {
-					var morphName = character.morphs[ i ];
-					
-					morphConfig[ morphName ] = character.morphslimit[ i ];
-					
-				}
-				
-				for ( var i = 0; i < character.numMorphs; i ++ ) {
-				    
-					morphGui.add( morphConfig, character.morphs[ i ] ).min( character.morphslowlimit[ i ] ).max(character.morphshighlimit[ i ]).onChange( morphCallback( i ) );
-				}
-				
-				morphGui.open();
-			
-			}
-
 			function onWindowResize() {
 
 				windowHalfX = window.innerWidth / 2;      
